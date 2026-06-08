@@ -45,9 +45,34 @@ public class DatahubEmitter {
         return t;
     });
     private volatile RestEmitter emitter;
+    private volatile boolean datahubReachable = true;  // 연결 가능 여부 — 실패 시 false, 성공 시 복구
 
     public DatahubEmitter(DatahubProperties props) {
         this.props = props;
+    }
+
+    private boolean shouldSkip() {
+        if (!datahubReachable) {
+            log.debug("[aileron] DataHub 연결 불가 상태 — emit skip");
+            return true;
+        }
+        return false;
+    }
+
+    private void onSuccess() {
+        if (!datahubReachable) {
+            log.info("[aileron] DataHub 연결 복구 — emit 재개");
+        }
+        datahubReachable = true;
+    }
+
+    private void onFailure(Exception e) {
+        datahubReachable = false;
+        if (props.isSilentFail()) {
+            log.warn("[aileron] DataHub emit 실패 — 이후 요청 skip: {}", e.getMessage());
+        } else {
+            throw new RuntimeException(e);
+        }
     }
 
     // ── public async API ──────────────────────────────────────────────────────
@@ -71,6 +96,7 @@ public class DatahubEmitter {
     // ── private emit methods ──────────────────────────────────────────────────
 
     private void emitDataflow(JobContext job) {
+        if (shouldSkip()) return;
         try (RestEmitter emitter = buildEmitter()) {
             DataFlowUrn flowUrn = flowUrn(job);
             DataFlowInfo info = new DataFlowInfo().setName(job.getFlow());
@@ -83,13 +109,15 @@ public class DatahubEmitter {
                     .upsert()
                     .aspect(info)
                     .build());
+            onSuccess();
             log.info("[aileron] emit ok | dataflow  flow={}", job.getFlow());
         } catch (Exception e) {
-            handleError("DataFlow emit failed", e);
+            onFailure(e);
         }
     }
 
     private void emitDatajob(JobContext job) {
+        if (shouldSkip()) return;
         try (RestEmitter emitter = buildEmitter()) {
             DataFlowUrn flowUrn = flowUrn(job);
             DataJobUrn jobUrn = jobUrn(job);
@@ -106,13 +134,15 @@ public class DatahubEmitter {
                     .upsert()
                     .aspect(info)
                     .build());
+            onSuccess();
             log.info("[aileron] emit ok | datajob   flow={}  job={}", job.getFlow(), job.getJobId());
         } catch (Exception e) {
-            handleError("DataJob emit failed", e);
+            onFailure(e);
         }
     }
 
     private void emitRunStart(JobContext job) {
+        if (shouldSkip()) return;
         try (RestEmitter emitter = buildEmitter()) {
             String instanceUrn = instanceUrn(job);
             AuditStamp audit = new AuditStamp()
@@ -148,14 +178,16 @@ public class DatahubEmitter {
                             .setAttempt(1))
                     .build());
 
+            onSuccess();
             log.info("[aileron] emit ok | run_start  flow={}  job={}  run={}",
                     job.getFlow(), job.getJobId(), job.getRunId().substring(0, 8));
         } catch (Exception e) {
-            handleError("DataProcessInstance start emit failed", e);
+            onFailure(e);
         }
     }
 
     private void emitRunEnd(JobContext job, boolean success, String errorMsg, boolean patch) {
+        if (shouldSkip()) return;
         try (RestEmitter emitter = buildEmitter()) {
             long endTimeMs = System.currentTimeMillis();
             String instanceUrn = instanceUrn(job);
@@ -217,10 +249,11 @@ public class DatahubEmitter {
                         .build());
             }
 
+            onSuccess();
             log.info("[aileron] emit ok | run_end    flow={}  job={}  run={}  result={}",
                     job.getFlow(), job.getJobId(), job.getRunId().substring(0, 8), resultType);
         } catch (Exception e) {
-            handleError("DataProcessInstance end emit failed", e);
+            onFailure(e);
         }
     }
 
@@ -294,6 +327,8 @@ public class DatahubEmitter {
         return arr;
     }
 
+    // handleError는 onFailure로 대체됨
+    @SuppressWarnings("unused")
     private void handleError(String msg, Exception e) {
         if (props.isSilentFail()) {
             log.warn("[aileron] {} (silent): {}", msg, e.getMessage());
