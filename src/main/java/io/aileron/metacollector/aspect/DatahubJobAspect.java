@@ -1,6 +1,7 @@
 package io.aileron.metacollector.aspect;
 
 import io.aileron.metacollector.annotation.DatahubJob;
+import io.aileron.metacollector.config.DatahubProperties;
 import io.aileron.metacollector.context.JobContext;
 import io.aileron.metacollector.context.JobContextHolder;
 import io.aileron.metacollector.emitter.DatahubEmitter;
@@ -21,13 +22,20 @@ public class DatahubJobAspect {
     private static final Logger log = LoggerFactory.getLogger(DatahubJobAspect.class);
 
     private final DatahubEmitter emitter;
+    private final DatahubProperties props;
 
-    public DatahubJobAspect(DatahubEmitter emitter) {
+    public DatahubJobAspect(DatahubEmitter emitter, DatahubProperties props) {
         this.emitter = emitter;
+        this.props = props;
     }
 
     @Around("@annotation(datahubJob)")
     public Object around(ProceedingJoinPoint pjp, DatahubJob datahubJob) throws Throwable {
+        // aileron.datahub.enabled=false 이면 emit 없이 그냥 통과 — 비즈니스 로직에 영향 없음
+        if (!props.isEnabled()) {
+            return pjp.proceed();
+        }
+
         List<String> upstreamJobs = Arrays.asList(datahubJob.upstreamJobs());
         JobContext job = new JobContext(
                 datahubJob.jobId(),

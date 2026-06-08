@@ -5,6 +5,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "aileron.datahub")
 public class DatahubProperties {
 
+    /** DataHub 연동 활성화 여부 (기본: true) — false 시 모든 emit skip, 비즈니스 로직에 영향 없음 */
+    private boolean enabled = true;
+
     /** DataHub GMS URL */
     private String gmsUrl = "http://localhost:8080";
 
@@ -30,6 +33,9 @@ public class DatahubProperties {
      * DataHub 연결 실패 후 재시도 대기 시간 초 (기본: 60초)
      */
     private int cooldownSec = 60;
+
+    public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
 
     public String getGmsUrl() { return gmsUrl; }
     public void setGmsUrl(String gmsUrl) { this.gmsUrl = gmsUrl; }

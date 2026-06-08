@@ -21,7 +21,7 @@ public class DatahubAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public DatahubJobAspect datahubJobAspect(DatahubEmitter emitter) {
-        return new DatahubJobAspect(emitter);
+    public DatahubJobAspect datahubJobAspect(DatahubEmitter emitter, DatahubProperties props) {
+        return new DatahubJobAspect(emitter, props);
     }
 }
