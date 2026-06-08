@@ -4,13 +4,35 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.aileron</groupId>
+    <groupId>io.github.wansik92</groupId>
     <artifactId>aileron-meta-collector</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
 
     <name>aileron-meta-collector</name>
     <description>Spring AOP-based DataHub lineage collector</description>
+    <url>https://github.com/wansik92/aileron-meta-collector-java</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>wansik92</name>
+            <email>aileron@aileron.io</email>
+            <url>https://github.com/wansik92</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/wansik92/aileron-meta-collector-java.git</connection>
+        <developerConnection>scm:git:ssh://github.com/wansik92/aileron-meta-collector-java.git</developerConnection>
+        <url>https://github.com/wansik92/aileron-meta-collector-java</url>
+    </scm>
 
     <properties>
         <java.version>17</java.version>
@@ -18,7 +40,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.2.0</spring-boot.version>
-        <datahub.version>0.13.1</datahub.version>
+        <datahub.version>1.4.0.3.3-patched</datahub.version>
     </properties>
 
     <dependencyManagement>
@@ -52,7 +74,7 @@
             <artifactId>aspectjweaver</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.acryl</groupId>
+            <groupId>io.github.baccas300</groupId>
             <artifactId>datahub-client</artifactId>
             <version>${datahub.version}</version>
         </dependency>
@@ -64,19 +86,68 @@
         </dependency>
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>datahub</id>
-            <url>https://maven.datahubproject.io/repository/releases/</url>
-        </repository>
-    </repositories>
-
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
+            </plugin>
+            <!-- sources jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals><goal>jar-no-fork</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- javadoc jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals><goal>jar</goal></goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doclint>none</doclint>
+                </configuration>
+            </plugin>
+            <!-- GPG signing -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals><goal>sign</goal></goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <keyname>2B73AD10FA4D483B</keyname>
+                    <gpgExecutable>gpg</gpgExecutable>
+                </configuration>
+            </plugin>
+            <!-- Maven Central 배포 -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.5.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
+                    <waitUntil>published</waitUntil>
+                </configuration>
             </plugin>
         </plugins>
     </build>

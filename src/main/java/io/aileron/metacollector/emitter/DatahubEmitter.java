@@ -2,6 +2,7 @@ package io.aileron.metacollector.emitter;
 
 import com.linkedin.common.AuditStamp;
 import com.linkedin.common.DataJobUrnArray;
+import com.linkedin.common.DatasetUrnArray;
 import com.linkedin.common.UrnArray;
 import com.linkedin.common.urn.DataFlowUrn;
 import com.linkedin.common.urn.DataJobUrn;
@@ -203,8 +204,8 @@ public class DatahubEmitter {
             List<String> upstreamJobUrns = resolveUpstreamUrns(job);
             if (!inputs.isEmpty() || !outputs.isEmpty() || !upstreamJobUrns.isEmpty()) {
                 DataJobInputOutput inputOutput = new DataJobInputOutput()
-                        .setInputDatasets(toUrnArray(inputs))
-                        .setOutputDatasets(toUrnArray(outputs))
+                        .setInputDatasets(toDatasetUrnArray(inputs))
+                        .setOutputDatasets(toDatasetUrnArray(outputs))
                         .setInputDatajobs(toDataJobUrnArray(upstreamJobUrns));
 
                 emit(emitter, MetadataChangeProposalWrapper.builder()
@@ -261,6 +262,14 @@ public class DatahubEmitter {
         UrnArray arr = new UrnArray();
         for (String u : urns) {
             try { arr.add(Urn.createFromString(u)); } catch (URISyntaxException ignored) {}
+        }
+        return arr;
+    }
+
+    private DatasetUrnArray toDatasetUrnArray(List<String> urns) {
+        DatasetUrnArray arr = new DatasetUrnArray();
+        for (String u : urns) {
+            try { arr.add(com.linkedin.common.urn.DatasetUrn.createFromString(u)); } catch (URISyntaxException ignored) {}
         }
         return arr;
     }
