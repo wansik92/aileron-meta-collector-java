@@ -44,6 +44,7 @@ public class DatahubEmitter {
         t.setDaemon(true);
         return t;
     });
+    private volatile RestEmitter emitter;
 
     public DatahubEmitter(DatahubProperties props) {
         this.props = props;
@@ -226,7 +227,18 @@ public class DatahubEmitter {
     // ── helpers ───────────────────────────────────────────────────────────────
 
     private RestEmitter buildEmitter() {
-        return RestEmitter.create(b -> b.server(props.getGmsUrl()));
+        if (emitter == null) {
+            synchronized (this) {
+                if (emitter == null) {
+                    emitter = RestEmitter.create(b -> b
+                            .server(props.getGmsUrl())
+                            .timeoutSec(props.getConnectTimeoutSec())
+                            .maxRetries(props.getMaxRetries())
+                    );
+                }
+            }
+        }
+        return emitter;
     }
 
     private void emit(RestEmitter emitter, MetadataChangeProposalWrapper mcp) throws Exception {
