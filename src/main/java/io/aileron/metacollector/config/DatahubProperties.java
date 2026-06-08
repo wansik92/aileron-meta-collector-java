@@ -26,6 +26,11 @@ public class DatahubProperties {
      */
     private int maxRetries = 0;
 
+    /**
+     * DataHub 연결 실패 후 재시도 대기 시간 초 (기본: 60초)
+     */
+    private int cooldownSec = 60;
+
     public String getGmsUrl() { return gmsUrl; }
     public void setGmsUrl(String gmsUrl) { this.gmsUrl = gmsUrl; }
 
@@ -40,4 +45,7 @@ public class DatahubProperties {
 
     public int getMaxRetries() { return maxRetries; }
     public void setMaxRetries(int maxRetries) { this.maxRetries = maxRetries; }
+
+    public int getCooldownSec() { return cooldownSec; }
+    public void setCooldownSec(int cooldownSec) { this.cooldownSec = cooldownSec; }
 }

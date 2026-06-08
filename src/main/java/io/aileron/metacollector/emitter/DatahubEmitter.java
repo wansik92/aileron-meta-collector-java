@@ -46,6 +46,7 @@ public class DatahubEmitter {
     });
     private volatile RestEmitter emitter;
     private volatile boolean datahubReachable = true;  // 연결 가능 여부 — 실패 시 false, 성공 시 복구
+    private volatile long lastFailTimeMs = 0L;          // 마지막 실패 시각 (쿨다운 계산용)
 
     public DatahubEmitter(DatahubProperties props) {
         this.props = props;
@@ -53,6 +54,11 @@ public class DatahubEmitter {
 
     private boolean shouldSkip() {
         if (!datahubReachable) {
+            long cooldownMs = props.getCooldownSec() * 1000L;
+            if (System.currentTimeMillis() - lastFailTimeMs > cooldownMs) {
+                log.info("[aileron] DataHub 쿨다운 종료 — 연결 재시도");
+                return false;  // 쿨다운 지남 → 한 번 시도
+            }
             log.debug("[aileron] DataHub 연결 불가 상태 — emit skip");
             return true;
         }
@@ -68,8 +74,9 @@ public class DatahubEmitter {
 
     private void onFailure(Exception e) {
         datahubReachable = false;
+        lastFailTimeMs = System.currentTimeMillis();
         if (props.isSilentFail()) {
-            log.warn("[aileron] DataHub emit 실패 — 이후 요청 skip: {}", e.getMessage());
+            log.warn("[aileron] DataHub emit 실패 — {}초 후 재시도: {}", props.getCooldownSec(), e.getMessage());
         } else {
             throw new RuntimeException(e);
         }
