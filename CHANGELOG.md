@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.8] - 2026-06-09
+
+### Changed
+- Spring Boot `3.2.0` → `3.5.14` (보안 취약점 패치)
+- Spring Framework `6.1.1` → `6.2.18` (Spring Boot BOM 관리)
+
+---
+
 ## [0.1.6] - 2026-06-09
 
 ### Added
