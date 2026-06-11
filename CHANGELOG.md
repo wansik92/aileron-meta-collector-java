@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.11] - 2026-06-09
+
+### Changed
+- Spring Boot `3.5.14` → `3.5.15` — Spring Framework 6.2.19 자연 포함 (BOM 오버라이드 제거)
+
+---
+
 ## [0.1.10] - 2026-06-09
 
 ### Changed

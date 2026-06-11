@@ -6,7 +6,7 @@
 
     <groupId>io.github.wansik92</groupId>
     <artifactId>aileron-meta-collector</artifactId>
-    <version>0.1.10</version>
+    <version>0.1.11</version>
     <packaging>jar</packaging>
 
     <name>aileron-meta-collector</name>
@@ -39,20 +39,12 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring-boot.version>3.5.14</spring-boot.version>
+        <spring-boot.version>3.5.15</spring-boot.version>
         <datahub.version>1.4.0.3.3-patched</datahub.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- Spring Framework 6.2.19 명시적 오버라이드 (보안 취약점 패치) — Boot BOM보다 먼저 선언해야 우선 적용 -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-framework-bom</artifactId>
-                <version>6.2.19</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
