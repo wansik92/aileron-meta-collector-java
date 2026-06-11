@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.10] - 2026-06-09
+
+### Changed
+- Spring Framework `6.2.18` → `6.2.19` (보안 취약점 패치)
+  - `spring-framework-bom` 명시적 오버라이드로 적용
+
+---
+
 ## [0.1.8] - 2026-06-09
 
 ### Changed
